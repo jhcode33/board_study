@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+	  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+	  layout:decorate="~{layout/default_layout}">
+<!-- layout Content -->
+<th:block layout:fragment="content">
+
+        <div class="container">
+            <h1>Board Register.</h1>
+            <form id="frm" action="/board/write/action" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Title.</label>
+                    <input type="text" class="form-control" name="title" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Content</label>
+                    <textarea class="form-control" rows="5" name="content" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Writer.</label>
+                    <input type="text" class="form-control" name="registerId" required>
+                </div>
+                <div class="mb-3">
+				    <label class="form-label font-weight-bold">File Upload.</label>
+				    <div id="fileDiv">
+				        <div class="custom-file mt-1">
+				            <input type="file" class="custom-file-input" id="customFile" name="customFile" onchange="fnChngFile(this);">
+				            <label class="custom-file-label" for="customFile">Choose file</label>
+				        </div>
+				    </div>
+				    <div class="float-right mt-2">
+				        <a class="btn btn-primary text-white" href="javascript:fnAddFileDiv();">+</a>
+				        <a class="btn btn-danger text-white" href="javascript:fnDelFileDiv();">-</a>
+				    </div>
+				</div>
+                <button type="reset"  class="btn btn-danger">취소</button>
+                <button type="submit" class="btn btn-primary">저장</button>
+                <button type="button" class="btn btn-success" onclick="moveList()">목록</button>
+            </form>
+        </div>
+</th:block>
+</html>

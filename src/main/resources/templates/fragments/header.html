@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="headerFragment">
+	<head>
+	    <title>Board.Jhcode33</title>
+	    <meta charset="UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1" />
+	    <!-- bootstrap css, js -->
+	    <link rel="stylesheet" href="/css/bootstrap.min.css">
+	    <script src="/js/bootstrap.min.js"></script>
+	    <!-- JQuery & JQuery Validation Plugin -->
+	    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+	    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
+
+		<script th:inline="javascript">
+		  //moveList
+		  function moveList(){
+			  location.href = "/board/list"
+		  }
+		  
+		  //목록에서 삭제
+          function fnDelete() {
+              let delInpChkLen = $("input[name='deleteId']:checked").length;
+              if (delInpChkLen > 0) {
+                  if (confirm("Do you want to delete it?")) {
+                      let frm = $("#frm");
+                      frm.attr("action", "/board/delete");
+                      frm.attr("method", "post");
+                      frm.submit();
+                  }
+              } else {
+                  alert("Not selected.");
+              }
+          }
+	
+          // header checkbox event
+          $("#chkAll").click(function () {
+              if (this.checked) {
+                  $("input[name='deleteId']").prop("checked", true);
+              } else {
+                  $("input[name='deleteId']").prop("checked", false);
+              }
+          });
+          // body checkbox event
+          $("input[name='deleteId']").click(function () {
+              let delInpLen = $("input[name='deleteId']").length;
+              let delInpChkLen = $("input[name='deleteId']:checked").length;
+              if (delInpLen == delInpChkLen) {
+                  $("#chkAll").prop("checked", true);
+              } else {
+                  $("#chkAll").prop("checked", false);
+              }
+          });
+          
+          //파일 관련 javascript
+          let frm = $("#frm");
+          let $origFileDiv = $(".custom-file");
+          let fileMaxCnt = 3,
+              fileMaxSize = 10485760,
+              fileAllowExt = ["jpg", "jpeg", "png"];
+          let deleteFileIdArr = [];
+              /*
+              파일 등록 최대 개수는 3개
+              파일 사이즈는 10MB
+              파일 허용 확장자는 jpg, jpeg, png
+              (properties로 관리하는게 더 용이하다.)*/
+
+          function fnAddFileDiv() {
+              let fileDivCnt = $(".custom-file").length;
+
+              if (fileDivCnt >= fileMaxCnt) {
+                  alert("Can't add any more file.");
+                  return false;
+              }
+
+              let $copyFileDiv = $origFileDiv.clone(true);
+
+              $copyFileDiv.find("input").val("");
+              $copyFileDiv.find("label").text("Choose file");
+              $copyFileDiv.find("label").attr("for", "customFile" + fileDivCnt);
+              $copyFileDiv.find("input").attr("id", "customFile" + fileDivCnt);
+              $copyFileDiv.find("input").attr("name", "customFile" + fileDivCnt);
+
+              $("#fileDiv").append($copyFileDiv);
+          }
+
+          function fnDelFileDiv() {
+              if ($(".custom-file").length <= 1) {
+                  alert("Can't Delete any more file.");
+                  return false;
+              }
+              $(".custom-file")[$(".custom-file").length - 1].remove();
+          }
+		  
+          //파일 변경
+          function fnChngFile(obj) {
+              let fileObj = $(obj)[0];
+              let fileVal = fileObj.files[0].name;
+              let fileSize = fileObj.files[0].size;
+              let fileExt = fileVal.substring(fileVal.lastIndexOf(".") + 1, fileVal.length);
+              let flag = true;
+
+              if (fileAllowExt.indexOf(fileExt.toLowerCase()) < 0) {
+                  alert("It is not a registrable extension.");
+              } else if (fileSize > fileMaxSize) {
+                  alert("Attachments can be registered up to 10MB.");
+              } else if (($(".fileList").length + $(".custom-file-input").length) > 3) {
+                  alert("Attachments can be registered up to 3number.");
+              } else {
+                  flag = false;
+                  $(obj).next("label").text(fileVal);
+              }
+
+              if (flag) {
+                  $(obj).val("");
+                  $(obj).next("label").text("Choose file");
+              }
+          }
+		  
+          //등록, 수정할 때 보여질 메세지
+          function fnSubmit() {
+              if (confirm("Do you want to do it?")) {
+                  $("#frm").submit();
+              }
+          }
+          
+		  //파일만 삭제
+          function fnFileDelete(obj, id) {
+              if (confirm("Do you want to file delete it?")) {
+                  $(obj).parents(".fileList").remove();
+                  deleteFileIdArr.push(id);
+              }
+          }
+		  //게시글 + 파일 삭제
+          function fnViewDelete() {
+              if (confirm("Do you want to delete it?")) {
+            	  let frm = $("#frm");
+                  frm.attr("action", "/board/view/delete");
+                  frm.submit();
+              }
+          }
+
+          $(function() {
+              frm.validate({
+                  messages: {
+                      title: {
+                          required: "Custom required, Please enter a title."
+                      }
+                  },
+                  submitHandler: function(form) {
+                      if (deleteFileIdArr.length > 0) {
+                          $.ajax({
+                              url: "/file/delete.ajax",
+                              type: "post",
+                              data: {
+                                  idArr: deleteFileIdArr
+                              },
+                              dataType: "json",
+                              success: function(r) {
+                                  if (r.result) {
+                                      form.submit();
+                                  } else {
+                                      alert("A problem occurred, and progress is interrupted. Try again in a few minutes.");
+                                  }
+                              },
+                              error: function(e) {
+                                  console.log(e);
+                              }
+                          });
+                      } else {
+                          form.submit();
+                      }
+                  }
+              });
+          });
+		</script>
+	</head>
+</th:block>
+</html>
